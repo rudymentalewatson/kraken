@@ -1,0 +1,45 @@
+name: Build Kraken
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  audio-engine-test:
+    name: Audio engine test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and run the offline audio test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o render_test Tests/render_test.cpp
+          mkdir -p out
+          ./render_test out
+      - name: Keep the rendered demo sounds
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kraken-demo-sounds
+          path: out/*.wav
+
+  windows-vst3:
+    name: Windows VST3
+    runs-on: windows-latest
+    needs: audio-engine-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+
+        run: cmake --build build --config Release --target Kraken_VST3 Kraken_Standalone --parallel
+      - name: Collect files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item -Recurse -Path "build/Kraken_artefacts/Release/VST3/Kraken.vst3" -Destination "dist/Kraken.vst3"
+          Copy-Item -Path "build/Kraken_artefacts/Release/Standalone/Kraken.exe" -Destination "dist/Kraken-Standalone.exe"
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kraken-Windows-VST3
+          path: dist
