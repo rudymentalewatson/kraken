@@ -150,7 +150,7 @@ const juce::String KrakenProcessor::getProgramName (int index)
     const auto& list = factoryPresets();
     if (index < 0 || index >= (int) list.size())
         return {};
-    return list[(size_t) index].name;
+    return list[(size_t) index].name.c_str();
 }
 
 void KrakenProcessor::getStateInformation (juce::MemoryBlock& destData)

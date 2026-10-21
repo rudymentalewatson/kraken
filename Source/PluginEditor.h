@@ -1,7 +1,7 @@
 #pragma once
 #include "PluginProcessor.h"
 
-// Look of the knobs and menus: dark graphite, neon accents.
+// Look of knobs, menus and buttons: dark panel, vintage knobs, amber/green display.
 class KrakenLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
@@ -12,9 +12,10 @@ public:
                            juce::Slider&) override;
 
     juce::Label* createSliderTextBox (juce::Slider&) override;
+    juce::Font getComboBoxFont (juce::ComboBox&) override;
 };
 
-// On-screen keyboard with coloured keys, standing upright on the right edge.
+// Keyboard along the bottom: ivory keys with a coloured cap, like the old home keyboards.
 class ColourKeyboard : public juce::MidiKeyboardComponent
 {
 public:
@@ -53,14 +54,15 @@ private:
     {
         juce::String name;
         juce::Colour colour;
-        int maxColumns = 4;
+        int row = 0;
         std::vector<int> params;
         juce::Rectangle<int> bounds;
     };
 
-    int layoutSections();       // places cards and knobs, returns the total height
+    void layoutPanel();
     void timerCallback() override;
     void stepPreset (int delta);
+    void fillPresetMenu();
 
     KrakenProcessor& processor;
     KrakenLookAndFeel lookAndFeel;
@@ -71,10 +73,17 @@ private:
     juce::ComboBox presetBox;
     juce::TextButton prevButton { "<" }, nextButton { ">" };
     ColourKeyboard keyboard;
+    juce::Rectangle<int> displayCard, lcdBox, keyboardArea;
 
-    static constexpr int kMainWidth = 620;
-    static constexpr int kKeyboardWidth = 92;
-    static constexpr int kHeaderHeight = 104;
+    // geometry (pixels)
+    static constexpr int kWidth = 1120, kHeight = 566;
+    static constexpr int kCheek = 44;          // wooden side panels
+    static constexpr int kHeaderH = 56;
+    static constexpr int kInnerW = 1020;
+    static constexpr int kCellW = 54, kCellH = 76, kLabelH = 12;
+    static constexpr int kBarH = 18, kPadX = 6, kPadTop = 4, kGap = 6;
+    static constexpr int kCardH = kBarH + kPadTop * 2 + 2 * kCellH;
+    static constexpr int kKeyboardH = 114;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KrakenEditor)
 };
